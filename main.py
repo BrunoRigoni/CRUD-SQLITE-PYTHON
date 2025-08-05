@@ -1,7 +1,7 @@
 import sqlite3
 import hashlib
 import admin_view
-import user_view_new
+import user_view
 import config
 
 
@@ -159,7 +159,7 @@ def login(connect):
             print(config.USER_ACCESS)
             input("Pressione Enter para acessar o painel de usuário...")
             # Passa nome e email do usuário
-            user_view_new.user_panel(connect, user[1], email)
+            user_view.user_panel(connect, user[1], email)
     else:
         print("Email ou senha incorretos!")
         print("Verifique se digitou as credenciais corretamente.")

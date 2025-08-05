@@ -99,8 +99,19 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
-# Banco de dados (opcional - você pode querer versionar)
-# database.db
+# Banco de dados
+*.db
+database.db
+
+# Arquivos Excel
+*.xlsx
+*.xls
+
+# Pastas de relatórios e inventário
+relatorios/
+inventario/
+inventario/download_base/
+inventario/upload_base/
 
 # IDEs
 .vscode/
