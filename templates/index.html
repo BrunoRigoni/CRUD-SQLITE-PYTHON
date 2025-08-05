@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Document</title>
+</head>
+<body>
+    <header class="header">
+        <div><a href="/">Home</a></div>
+        <div><a href="/products">Products</a></div>
+        <div><a href="/my-purchases">Sales</a></div>
+        <div><a href="/cart"><i class="fas fa-shopping-cart"></i> Cart</a></div>
+        <div class="search-container">
+            <input type="text" name="search" id="search" placeholder="Search products...">
+            <button class="search-button" type="button" onclick="performSearch()">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+        <div><a href="/login"><i class="fas fa-user"></i> Login</a></div>
+    </header>
+
+    <main>
+
+        <div class="banner">
+            <img src="/static/img/produto1.png" alt="Banner Product 1">
+            <img src="/static/img/produto1.png" alt="Banner Product 2">
+            <img src="/static/img/produto1.png" alt="Banner Product 3">
+        </div>
+
+        <div id="products">
+            <div class="category">
+                <button class="category-toggle" onclick="toggleCategories()">
+                    <i class="fas fa-chevron-down"></i>
+                    Categories
+                </button>
+                <ul class="category-list toggle-list">
+                    <li class="category-item" onclick="selectCategory(this)">Electronics</li>
+                    <li class="category-item" onclick="selectCategory(this)">Clothing</li>
+                    <li class="category-item" onclick="selectCategory(this)">Home & Garden</li>
+                    <li class="category-item" onclick="selectCategory(this)">Sports</li>
+                    <li class="category-item" onclick="selectCategory(this)">Books</li>
+                    <li class="category-item" onclick="selectCategory(this)">Toys</li>
+                    <li class="category-item" onclick="selectCategory(this)">Automotive</li>
+                    <li class="category-item" onclick="selectCategory(this)">Health & Beauty</li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <img src="/static/img/produto1.png" alt="Product 1">
+                <h3>Product 1</h3>
+                <p>R$ 100,00</p>
+                <button>Add to cart</button>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>All rights reserved - 2025 &copy; </p>
+    </footer>
+
+    <script>
+        function performSearch() {
+            const searchInput = document.getElementById('search');
+            const searchTerm = searchInput.value.trim();
+            
+            if (searchTerm) {
+                // Aqui você pode implementar a lógica de pesquisa
+                console.log('Searching for:', searchTerm);
+                alert('Searching for: ' + searchTerm);
+                // Exemplo: window.location.href = '/search?q=' + encodeURIComponent(searchTerm);
+            } else {
+                alert('Please enter a search term');
+            }
+        }
+
+        // Permitir pesquisa com Enter
+        document.getElementById('search').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // Função para expandir/recolher categorias
+        function toggleCategories() {
+            const categoryList = document.querySelector('.category-list');
+            const categoryToggle = document.querySelector('.category-toggle');
+            
+            categoryList.classList.toggle('expanded');
+            categoryToggle.classList.toggle('expanded');
+        }
+
+        // Função para selecionar uma categoria
+        function selectCategory(element) {
+            // Remove a classe active de todos os itens
+            const allItems = document.querySelectorAll('.category-item');
+            allItems.forEach(item => item.classList.remove('active'));
+            
+            // Adiciona a classe active ao item clicado
+            element.classList.add('active');
+            
+            // Aqui você pode implementar a lógica para filtrar produtos por categoria
+            const selectedCategory = element.textContent;
+            console.log('Selected category:', selectedCategory);
+            
+            // Exemplo: filtrar produtos por categoria
+            // filterProductsByCategory(selectedCategory);
+        }
+    </script>
+
+</body>
+</html>
