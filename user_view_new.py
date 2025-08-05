@@ -1,7 +1,6 @@
 import sqlite3
 import config
 from datetime import datetime
-import produtos_db
 import os
 
 
@@ -934,7 +933,7 @@ def vendas_por_periodo(connect, user_email):
             WHERE DATE(data_venda) BETWEEN ? AND ? AND usuario_email = ?
             GROUP BY DATE(data_venda)
             ORDER BY data
-                ''', (data_inicio, data_fim, user_email))
+        ''', (data_inicio, data_fim, user_email))
 
         vendas_diarias = cursor.fetchall()
         if vendas_diarias:
@@ -994,15 +993,11 @@ def produtos_baixo_estoque(connect, user_email):
 
 def user_panel(connect, user_name, user_email):
     """Painel principal do usuário"""
-    # Criar banco de dados específico do usuário
-    produtos_db_instance = produtos_db.create_produtos_db(user_email)
-    user_connect = produtos_db_instance.get_connection()
-
     print(f"\n{'='*60}")
     print(f"BEM-VINDO AO SEU PAINEL DE GERENCIAMENTO")
     print(f"Usuário: {user_name}")
     print(f"Email: {user_email}")
-    print(f"Banco de dados: {produtos_db_instance.get_db_name()}")
+    print(f"Banco de dados: database.db (centralizado)")
     print(f"{'='*60}")
 
     option = 0
@@ -1021,16 +1016,15 @@ def user_panel(connect, user_name, user_email):
             option = int(input("Digite a opção desejada: "))
 
             if option == 1:
-                menu_produtos(user_connect, user_email)
+                menu_produtos(connect, user_email)
             elif option == 2:
-                menu_vendas(user_connect, user_email)
+                menu_vendas(connect, user_email)
             elif option == 3:
-                menu_clientes(user_connect, user_email)
+                menu_clientes(connect, user_email)
             elif option == 4:
-                menu_analise_vendas(user_connect, user_email)
+                menu_analise_vendas(connect, user_email)
             elif option == 5:
                 print("Saindo do sistema...")
-                user_connect.close()
                 break
             else:
                 print("Opção inválida! Digite 1, 2, 3, 4 ou 5.")
