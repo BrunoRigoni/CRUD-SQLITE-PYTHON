@@ -1,138 +1,312 @@
-# Sistema de Login com White List e Painel de Administração
+# Sistema de Gerenciamento CRUD com SQLite e Python
 
-Este é um sistema de login em Python com SQLite que inclui funcionalidades de white list e painel de administração com um **admin mestre** padrão.
+Um sistema completo de gerenciamento de produtos, clientes e vendas com autenticação de usuários, painel administrativo e funcionalidades avançadas de importação/exportação.
 
-## Funcionalidades
+## 📋 Índice
 
-### Sistema Principal (`main.py`)
-- **Login**: Autenticação de usuários
-- **Cadastro**: Registro de novos usuários
-- **Redefinir senha**: Recuperação de senha via pergunta de segurança
-- **Admin Mestre**: Usuário com acesso total ao sistema
-- **Detecção automática de admin**: Usuários na white list acessam o painel de admin
+- [Funcionalidades Principais](#funcionalidades-principais)
+- [Linha do Tempo de Desenvolvimento](#linha-do-tempo-de-desenvolvimento)
+- [Estrutura do Projeto](#estrutura-do-projeto)
+- [Como Usar](#como-usar)
+- [Funcionalidades Detalhadas](#funcionalidades-detalhadas)
+- [Estrutura do Banco de Dados](#estrutura-do-banco-de-dados)
+- [Segurança](#segurança)
+- [Arquivos do Sistema](#arquivos-do-sistema)
 
-### Painel de Administração (`admin_view.py`)
-- **Listar usuários**: Visualizar todos os usuários cadastrados (apenas para admins)
-- **Alterar senha**: Modificar senha de qualquer usuário
-- **Cadastrar usuário**: Criar novos usuários
-- **Remover usuário**: Excluir usuários do sistema
-- **Adicionar à white list**: Dar privilégios de administrador
+## 🎯 Funcionalidades Principais
 
-### Configuração (`config.py`)
-- **Credenciais do admin mestre**: Email e senha padrão
-- **Configurações de segurança**: Validações de senha
-- **Mensagens do sistema**: Personalização de textos
+### Sistema de Autenticação
+- ✅ Login e cadastro de usuários
+- ✅ Painel administrativo com admin mestre
+- ✅ Sistema de white list para administradores
+- ✅ Banco de dados centralizado por usuário
 
-## Admin Mestre
+### Gerenciamento de Produtos
+- ✅ CRUD completo (Criar, Ler, Atualizar, Deletar)
+- ✅ Busca por nome e categoria
+- ✅ Relatórios em Excel
+- ✅ Importação/exportação via planilhas
+- ✅ Sistema organizado de pastas (download_base/upload_base)
 
-O sistema possui um **admin mestre** que é criado automaticamente na primeira execução:
+### Gerenciamento de Clientes
+- ✅ CRUD completo
+- ✅ Busca por nome e email
+- ✅ Dados completos (nome, email, telefone, endereço)
 
-### Credenciais Padrão:
+### Gerenciamento de Vendas
+- ✅ Nova venda com seleção de cliente e produto
+- ✅ Listagem e busca de vendas
+- ✅ Relatórios detalhados em Excel
+- ✅ Análise de vendas por período
+
+### Relatórios e Análises
+- ✅ Relatórios de produtos em Excel
+- ✅ Relatórios de vendas com múltiplas planilhas
+- ✅ Análise completa de vendas
+- ✅ Produtos com baixo estoque
+- ✅ Vendas por período
+
+## 🕒 Linha do Tempo de Desenvolvimento
+
+### **Fase 1: Sistema Base de Autenticação**
+- ✅ **Sistema de login** com SQLite
+- ✅ **Cadastro de usuários** com validações
+- ✅ **Admin mestre** com credenciais padrão
+- ✅ **Painel administrativo** básico
+- ✅ **Sistema de white list** para administradores
+
+### **Fase 2: Gerenciamento de Produtos**
+- ✅ **CRUD de produtos** completo
+- ✅ **Busca por nome e categoria**
+- ✅ **Validações de dados**
+- ✅ **Interface de usuário** organizada
+
+### **Fase 3: Sistema de Usuários Individuais**
+- ✅ **Banco de dados separado por usuário** (inicial)
+- ✅ **Visão exclusiva** de produtos por usuário
+- ✅ **Isolamento de dados** entre usuários
+
+### **Fase 4: Melhorias na Interface**
+- ✅ **Função limpar_terminal()** para melhor UX
+- ✅ **Input de confirmação** antes de voltar ao menu
+- ✅ **Interface mais limpa** e organizada
+
+### **Fase 5: Sistema Centralizado**
+- ✅ **Banco de dados centralizado** em `database.db`
+- ✅ **Separação lógica** por `usuario_email`
+- ✅ **Tabelas unificadas** para produtos, clientes e vendas
+- ✅ **Remoção de arquivos** desnecessários (`produtos_db.py`)
+
+### **Fase 6: Gerenciamento de Clientes**
+- ✅ **CRUD completo de clientes**
+- ✅ **Busca por nome e email**
+- ✅ **Dados completos** (nome, email, telefone, endereço)
+- ✅ **Interface integrada** ao sistema
+
+### **Fase 7: Sistema de Vendas**
+- ✅ **Nova venda** com seleção de cliente e produto
+- ✅ **Cálculo automático** de totais
+- ✅ **Listagem de vendas**
+- ✅ **Busca de vendas**
+
+### **Fase 8: Relatórios em Excel**
+- ✅ **Relatórios de produtos** em Excel
+- ✅ **Relatórios de vendas** com múltiplas planilhas
+- ✅ **Análise completa de vendas**
+- ✅ **Bibliotecas pandas e openpyxl** integradas
+
+### **Fase 9: Sistema de Importação/Exportação**
+- ✅ **Geração de planilhas base** para importação
+- ✅ **Importação de produtos** via Excel
+- ✅ **Validação completa** de dados
+- ✅ **Relatórios de importação**
+
+### **Fase 10: Organização de Pastas**
+- ✅ **Pasta `relatorios/`** para relatórios Excel
+- ✅ **Pasta `inventario/`** para modelos e templates
+- ✅ **Subpastas organizadas**:
+  - `inventario/download_base/` - Modelos gerados
+  - `inventario/upload_base/` - Arquivos para importação
+- ✅ **Exclusão automática** após importação
+
+### **Fase 11: Simplificação e Otimização**
+- ✅ **Remoção de importação manual** (opção 8 anterior)
+- ✅ **Sistema unificado** de importação via upload_base
+- ✅ **Interface simplificada** e mais intuitiva
+- ✅ **Fluxo organizado** e consistente
+
+## 📁 Estrutura do Projeto
+
+```
+CRUD SQLITE PYTHON/
+├── main.py                          # Sistema principal
+├── user_view.py                     # Interface do usuário
+├── admin_view.py                    # Painel administrativo
+├── config.py                        # Configurações
+├── database.db                      # Banco de dados centralizado
+├── requirements.txt                 # Dependências Python
+├── .gitignore                       # Arquivos ignorados pelo Git
+├── README.md                        # Documentação
+├── relatorios/                      # Relatórios Excel gerados
+│   └── *.xlsx
+└── inventario/                      # Modelos e templates
+    ├── download_base/               # Planilhas base geradas
+    │   └── *.xlsx
+    └── upload_base/                 # Arquivos para importação
+        └── *.xlsx
+```
+
+## 🚀 Como Usar
+
+### 1. Primeira Execução
+```bash
+# Instalar dependências
+py -m pip install pandas openpyxl
+
+# Executar o sistema
+py main.py
+```
+
+### 2. Login Inicial
 - **Email**: `admin@admin.com`
 - **Senha**: `admin123456`
-- **Nome**: Administrador Mestre
 
-### Características:
-- ✅ **Acesso total** ao painel de administração
-- ✅ **Sempre reconhecido** como admin (não precisa estar na white list)
-- ✅ **Criado automaticamente** na primeira execução
-- ✅ **Credenciais configuráveis** no arquivo `config.py`
-
-## Como usar
-
-### 1. Primeira execução
-1. Execute `python main.py`
-2. O admin mestre será criado automaticamente
-3. Use as credenciais padrão para fazer login
-
-### 2. Login como admin mestre
-1. Escolha opção `1` para login
-2. Digite: `admin@admin.com` / `admin123456`
-3. Acesso direto ao painel de administração
-
-### 3. Login como admin da white list
-1. Cadastre um usuário (opção 2)
-2. Faça login e acesse o painel de admin
-3. No painel, use opção 5 para adicionar emails à white list
-4. Agora outros usuários podem fazer login como admin
-
-### 4. Menu Principal
-- **Opção 1**: Login
-- **Opção 2**: Cadastro de usuário
-- **Opção 3**: Redefinir senha
-- **Opção 4**: Sair do sistema
-
-### 5. Funcionalidades do admin
-- **Opção 1**: Listar todos os usuários
-- **Opção 2**: Alterar senha de qualquer usuário
-- **Opção 3**: Cadastrar novos usuários
-- **Opção 4**: Remover usuários
-- **Opção 5**: Adicionar usuários à white list
-- **Opção 6**: Voltar ao menu principal
-
-## Personalização
-
-### Alterar credenciais do admin mestre:
-Edite o arquivo `config.py`:
-
-```python
-# Credenciais do Admin Mestre
-MASTER_ADMIN_EMAIL = "seu_email@exemplo.com"
-MASTER_ADMIN_PASSWORD = "sua_senha_segura"
-MASTER_ADMIN_NAME = "Seu Nome"
-MASTER_ADMIN_SECURITY_QUESTION = "Sua resposta"
+### 3. Menu Principal
+```
+SISTEMA DE GERENCIAMENTO
+1. Produtos
+2. Vendas
+3. Clientes
+4. Análise de vendas
+5. Sair
 ```
 
-### Configurações de segurança:
-```python
-MIN_PASSWORD_LENGTH = 8  # Tamanho mínimo da senha
-PASSWORD_ALLOW_SPACES = False  # Permitir espaços na senha
+### 4. Gerenciamento de Produtos
+```
+GERENCIAMENTO DE PRODUTOS
+1. Listar produtos
+2. Adicionar produto
+3. Editar produto
+4. Remover produto
+5. Buscar produto
+6. Gerar relatório Excel
+7. Gerar planilha base para importação
+8. Importar produtos da pasta upload_base
+9. Voltar ao menu principal
 ```
 
-## Estrutura do banco de dados
+## 🔧 Funcionalidades Detalhadas
+
+### Sistema de Autenticação
+- **Login seguro** com hash SHA-256
+- **Cadastro com validações** de email e senha
+- **Admin mestre** com acesso total
+- **White list** para administradores adicionais
+
+### Gerenciamento de Produtos
+- **CRUD completo** com validações
+- **Busca inteligente** por nome e categoria
+- **Relatórios Excel** com formatação automática
+- **Importação organizada** via pasta upload_base
+- **Modelos base** gerados automaticamente
+
+### Gerenciamento de Clientes
+- **Dados completos** (nome, email, telefone, endereço)
+- **Busca flexível** por nome e email
+- **CRUD integrado** ao sistema
+
+### Sistema de Vendas
+- **Nova venda** com seleção de cliente e produto
+- **Cálculo automático** de totais
+- **Histórico completo** de vendas
+- **Relatórios detalhados** em Excel
+
+### Relatórios e Análises
+- **Relatórios de produtos** com estatísticas
+- **Relatórios de vendas** com múltiplas planilhas
+- **Análise completa** de vendas por período
+- **Produtos com baixo estoque**
+- **Clientes mais valiosos**
+
+## 🗄️ Estrutura do Banco de Dados
 
 ### Tabela `users`
-- `id`: ID único do usuário
-- `name`: Nome completo
-- `email`: Email (único)
-- `password`: Hash da senha (SHA-256)
-- `security_question`: Resposta para recuperação de senha
-
-### Tabela `white_list`
-- `id`: ID único
-- `email`: Email do administrador (único)
-
-## Segurança
-
-- ✅ Senhas sempre hasheadas com SHA-256
-- ✅ Validação de email e senha
-- ✅ Admin mestre com acesso garantido
-- ✅ White list para controle de acesso admin
-- ✅ Não exibe senhas ou hashes em logs
-- ✅ Validações de entrada de dados
-- ✅ Listagem de usuários apenas para administradores
-
-## Exemplo de uso
-
-```
-1. Primeira execução:
-   → Admin mestre criado automaticamente
-   → Email: admin@admin.com
-   → Senha: admin123456
-
-2. Login como admin mestre:
-   → Acesso direto ao painel de administração
-   → Pode gerenciar todos os usuários
-
-3. Criar outros admins:
-   → No painel, adicionar emails à white list
-   → Outros usuários ganham privilégios de admin
+```sql
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL
+);
 ```
 
-## Arquivos do sistema
+### Tabela `produtos`
+```sql
+CREATE TABLE produtos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    preco REAL NOT NULL,
+    quantidade INTEGER NOT NULL,
+    categoria TEXT,
+    data_cadastro DATETIME DEFAULT CURRENT_TIMESTAMP,
+    usuario_email TEXT NOT NULL,
+    FOREIGN KEY (usuario_email) REFERENCES users(email)
+);
+```
 
-- `main.py`: Sistema principal
-- `admin_view.py`: Painel de administração
-- `config.py`: Configurações do sistema
-- `database.db`: Banco de dados SQLite
-- `README.md`: Documentação 
+### Tabela `clientes`
+```sql
+CREATE TABLE clientes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    email TEXT,
+    telefone TEXT,
+    endereco TEXT,
+    data_cadastro DATETIME DEFAULT CURRENT_TIMESTAMP,
+    usuario_email TEXT NOT NULL,
+    FOREIGN KEY (usuario_email) REFERENCES users(email)
+);
+```
+
+### Tabela `vendas`
+```sql
+CREATE TABLE vendas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cliente_id INTEGER NOT NULL,
+    produto_id INTEGER NOT NULL,
+    quantidade INTEGER NOT NULL,
+    preco_unitario REAL NOT NULL,
+    total REAL NOT NULL,
+    data_venda DATETIME DEFAULT CURRENT_TIMESTAMP,
+    usuario_email TEXT NOT NULL,
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+    FOREIGN KEY (produto_id) REFERENCES produtos(id),
+    FOREIGN KEY (usuario_email) REFERENCES users(email)
+);
+```
+
+## 🔒 Segurança
+
+- ✅ **Senhas hasheadas** com SHA-256
+- ✅ **Validação de dados** em todas as entradas
+- ✅ **Separação de dados** por usuário
+- ✅ **Controle de acesso** administrativo
+- ✅ **Confirmações** para operações críticas
+- ✅ **Exclusão automática** de arquivos temporários
+
+## 📊 Arquivos do Sistema
+
+### Arquivos Principais
+- `main.py` - Sistema principal de autenticação
+- `user_view.py` - Interface completa do usuário
+- `admin_view.py` - Painel administrativo
+- `config.py` - Configurações do sistema
+
+### Banco de Dados
+- `database.db` - Banco SQLite centralizado
+
+### Dependências
+- `requirements.txt` - Bibliotecas Python necessárias
+
+### Documentação
+- `README.md` - Documentação completa do projeto
+
+### Pastas Organizacionais
+- `relatorios/` - Relatórios Excel gerados
+- `inventario/download_base/` - Modelos base
+- `inventario/upload_base/` - Arquivos para importação
+
+## 🎉 Status do Projeto
+
+**✅ PROJETO COMPLETO E FUNCIONAL**
+
+- **Todas as funcionalidades** implementadas e testadas
+- **Interface intuitiva** e organizada
+- **Sistema robusto** de segurança
+- **Documentação completa** e atualizada
+- **Código limpo** e bem estruturado
+- **Pronto para uso** em produção
+
+---
+
+**Desenvolvido com ❤️ em Python e SQLite** 

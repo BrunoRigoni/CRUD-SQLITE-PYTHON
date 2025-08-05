@@ -34,9 +34,8 @@ def menu_produtos(connect, user_email):
         print("5. Buscar produto")
         print("6. Gerar relatório Excel")
         print("7. Gerar planilha base para importação")
-        print("8. Importar produtos de arquivo Excel")
-        print("9. Importar produtos da pasta upload_base")
-        print("10. Voltar ao menu principal")
+        print("8. Importar produtos da pasta upload_base")
+        print("9. Voltar ao menu principal")
         print("-"*50)
 
         try:
@@ -57,10 +56,8 @@ def menu_produtos(connect, user_email):
             elif opcao == 7:
                 gerar_planilha_base_produtos(connect, user_email)
             elif opcao == 8:
-                importar_produtos_excel(connect, user_email)
-            elif opcao == 9:
                 importar_produtos_upload_base(connect, user_email)
-            elif opcao == 10:
+            elif opcao == 9:
                 break
             else:
                 print("Opção inválida!")
@@ -1517,140 +1514,6 @@ def gerar_planilha_base_produtos(connect, user_email):
         limpar_terminal()
     except Exception as e:
         print(f"❌ Erro ao gerar planilha base: {e}")
-        input("\nPressione Enter para voltar ao menu...")
-        limpar_terminal()
-
-
-def importar_produtos_excel(connect, user_email):
-    """Importa produtos de um arquivo Excel"""
-    try:
-        print("\n" + "="*60)
-        print("IMPORTAR PRODUTOS DE ARQUIVO EXCEL")
-        print("="*60)
-
-        # Solicitar caminho do arquivo
-        arquivo = input(
-            "Digite o caminho completo do arquivo Excel (ou pressione Enter para cancelar): ").strip()
-
-        if not arquivo:
-            print("Importação cancelada.")
-            input("\nPressione Enter para voltar ao menu...")
-            limpar_terminal()
-            return
-
-        # Verificar se o arquivo existe
-        if not os.path.exists(arquivo):
-            print(f"❌ Arquivo não encontrado: {arquivo}")
-            input("\nPressione Enter para voltar ao menu...")
-            limpar_terminal()
-            return
-
-        # Verificar extensão do arquivo
-        if not arquivo.lower().endswith(('.xlsx', '.xls')):
-            print("❌ Arquivo deve ter extensão .xlsx ou .xls")
-            input("\nPressione Enter para voltar ao menu...")
-            limpar_terminal()
-            return
-
-        print(f"\n📁 Carregando arquivo: {arquivo}")
-
-        # Ler arquivo Excel
-        df = pd.read_excel(arquivo, sheet_name=0)
-
-        # Verificar se as colunas necessárias existem
-        colunas_necessarias = ['Nome', 'Preço', 'Quantidade']
-        colunas_faltando = [
-            col for col in colunas_necessarias if col not in df.columns]
-
-        if colunas_faltando:
-            print(
-                f"❌ Colunas necessárias não encontradas: {', '.join(colunas_faltando)}")
-            print(f"📋 Colunas encontradas: {', '.join(df.columns)}")
-            input("\nPressione Enter para voltar ao menu...")
-            limpar_terminal()
-            return
-
-        # Processar dados
-        produtos_importados = 0
-        produtos_erro = 0
-        erros = []
-
-        print(f"\n📊 Processando {len(df)} produtos...")
-
-        for index, row in df.iterrows():
-            try:
-                # Pular linhas vazias ou com ID preenchido
-                if pd.isna(row['Nome']) or str(row['Nome']).strip() == '':
-                    continue
-
-                # Extrair dados
-                nome = str(row['Nome']).strip()
-                preco = float(row['Preço']) if not pd.isna(
-                    row['Preço']) else 0.0
-                quantidade = int(row['Quantidade']) if not pd.isna(
-                    row['Quantidade']) else 0
-                categoria = str(row['Categoria']).strip(
-                ) if 'Categoria' in df.columns and not pd.isna(row['Categoria']) else None
-
-                # Validações
-                if not nome:
-                    erros.append(f"Linha {index + 2}: Nome é obrigatório")
-                    produtos_erro += 1
-                    continue
-
-                if preco < 0:
-                    erros.append(
-                        f"Linha {index + 2}: Preço não pode ser negativo")
-                    produtos_erro += 1
-                    continue
-
-                if quantidade < 0:
-                    erros.append(
-                        f"Linha {index + 2}: Quantidade não pode ser negativa")
-                    produtos_erro += 1
-                    continue
-
-                # Inserir produto no banco
-                connect.execute('''
-                    INSERT INTO produtos (nome, preco, quantidade, categoria, usuario_email)
-                    VALUES (?, ?, ?, ?, ?)
-                ''', (nome, preco, quantidade, categoria, user_email))
-
-                produtos_importados += 1
-
-            except Exception as e:
-                erros.append(f"Linha {index + 2}: {str(e)}")
-                produtos_erro += 1
-
-        # Commit das alterações
-        connect.commit()
-
-        # Relatório final
-        print(f"\n✅ Importação concluída!")
-        print(f"📦 Produtos importados com sucesso: {produtos_importados}")
-
-        if produtos_erro > 0:
-            print(f"❌ Produtos com erro: {produtos_erro}")
-            print("\n📋 ERROS ENCONTRADOS:")
-            for erro in erros[:10]:  # Mostrar apenas os primeiros 10 erros
-                print(f"  - {erro}")
-            if len(erros) > 10:
-                print(f"  ... e mais {len(erros) - 10} erros")
-
-        if produtos_importados > 0:
-            print(
-                f"\n🎉 {produtos_importados} produtos foram adicionados ao seu estoque!")
-
-        input("\nPressione Enter para voltar ao menu...")
-        limpar_terminal()
-
-    except ImportError:
-        print("❌ Erro: Biblioteca 'openpyxl' não encontrada!")
-        print("💡 Para instalar: pip install openpyxl")
-        input("\nPressione Enter para voltar ao menu...")
-        limpar_terminal()
-    except Exception as e:
-        print(f"❌ Erro ao importar produtos: {e}")
         input("\nPressione Enter para voltar ao menu...")
         limpar_terminal()
 
