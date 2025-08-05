@@ -1,6 +1,7 @@
 import sqlite3
 import hashlib
 import admin_view
+import user_view_new
 import config
 
 
@@ -123,6 +124,9 @@ def login(connect):
             admin_view.admin_panel(connect)
         else:
             print(config.USER_ACCESS)
+            input("Pressione Enter para acessar o painel de usuário...")
+            # Passa nome e email do usuário
+            user_view_new.user_panel(connect, user[1], email)
     else:
         print("Senha incorreta!")
         print("Verifique se digitou a senha corretamente.")
