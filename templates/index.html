@@ -91,18 +91,6 @@
     </header>
 
     <main>
-        <!-- Carrossel de Produtos -->
-        <div class="carousel-container">
-            <button class="carousel-btn prev" onclick="changeSlide(-1)">❮</button>
-            <div class="carousel-slides" id="carousel-slides">
-                <!-- Slides serão carregados dinamicamente -->
-            </div>
-            <button class="carousel-btn next" onclick="changeSlide(1)">❯</button>
-            <div class="carousel-dots" id="carousel-dots">
-                <!-- Dots serão carregados dinamicamente -->
-            </div>
-        </div>
-
         <div id="products">
             <div class="category">
                 <button class="category-toggle" onclick="toggleCategories()">
@@ -128,8 +116,6 @@
     <script>
         let allProducts = [];
         let currentCategory = '';
-        let currentSlide = 0;
-        let carouselInterval;
 
         // Função para controlar o dropdown de login
         function toggleLoginDropdown(event) {
@@ -236,9 +222,6 @@
             }).join('');
 
             container.innerHTML = productsHTML;
-            
-            // Criar carrossel com as imagens dos produtos
-            createCarousel(products);
         }
 
         function performSearch() {
@@ -321,146 +304,6 @@
             if (!container) return;
             container.innerHTML = `<div class="error">${message}</div>`;
         }
-
-        // Funções do Carrossel
-        function createCarousel(products) {
-            const carouselSlides = document.getElementById('carousel-slides');
-            const carouselDots = document.getElementById('carousel-dots');
-            
-            if (!carouselSlides || !carouselDots) return;
-            
-            // Filtrar produtos que têm imagens
-            const productsWithImages = products.filter(product => product.image_path);
-            
-            // Se não há produtos com imagens, usar imagem padrão
-            if (productsWithImages.length === 0) {
-                carouselSlides.innerHTML = `
-                    <div class="carousel-slide active">
-                        <img src="/static/img/default-image.png" alt="Produto em Destaque">
-                        <div class="carousel-caption">
-                            <h2>Bem-vindo à nossa loja!</h2>
-                            <p>Descubra produtos incríveis</p>
-                        </div>
-                    </div>
-                `;
-                carouselDots.innerHTML = '<span class="dot active"></span>';
-                return;
-            }
-            
-            // Criar slides do carrossel (máximo 5 produtos)
-            const slidesToShow = Math.min(productsWithImages.length, 5);
-            let slidesHTML = '';
-            let dotsHTML = '';
-            
-            for (let i = 0; i < slidesToShow; i++) {
-                const product = productsWithImages[i];
-                const imageUrl = `/static/uploads/${product.image_path}`;
-                const isActive = i === 0 ? 'active' : '';
-                
-                slidesHTML += `
-                    <div class="carousel-slide ${isActive}">
-                        <img src="${imageUrl}" alt="${product.nome}" onerror="this.src='/static/img/default-image.png'">
-                        <div class="carousel-caption">
-                            <h2>${product.nome}</h2>
-                            <p>R$ ${product.preco.toFixed(2)}</p>
-                            <p class="product-category">${product.categoria}</p>
-                        </div>
-                    </div>
-                `;
-                
-                dotsHTML += `<span class="dot ${isActive}" onclick="goToSlide(${i})"></span>`;
-            }
-            
-            carouselSlides.innerHTML = slidesHTML;
-            carouselDots.innerHTML = dotsHTML;
-            
-            // Iniciar carrossel automático
-            startCarousel();
-        }
-
-        function changeSlide(direction) {
-            const slides = document.querySelectorAll('.carousel-slide');
-            const dots = document.querySelectorAll('.dot');
-            
-            if (slides.length === 0 || dots.length === 0) return;
-            
-            // Remover classe active do slide atual
-            if (slides[currentSlide]) {
-                slides[currentSlide].classList.remove('active');
-            }
-            if (dots[currentSlide]) {
-                dots[currentSlide].classList.remove('active');
-            }
-            
-            // Calcular novo slide
-            currentSlide += direction;
-            
-            // Loop do carrossel
-            if (currentSlide >= slides.length) currentSlide = 0;
-            if (currentSlide < 0) currentSlide = slides.length - 1;
-            
-            // Adicionar classe active ao novo slide
-            if (slides[currentSlide]) {
-                slides[currentSlide].classList.add('active');
-            }
-            if (dots[currentSlide]) {
-                dots[currentSlide].classList.add('active');
-            }
-        }
-
-        function goToSlide(slideIndex) {
-            const slides = document.querySelectorAll('.carousel-slide');
-            const dots = document.querySelectorAll('.dot');
-            
-            if (slides.length === 0 || dots.length === 0) return;
-            
-            // Remover classe active do slide atual
-            if (slides[currentSlide]) {
-                slides[currentSlide].classList.remove('active');
-            }
-            if (dots[currentSlide]) {
-                dots[currentSlide].classList.remove('active');
-            }
-            
-            // Definir novo slide
-            currentSlide = slideIndex;
-            
-            // Adicionar classe active ao novo slide
-            if (slides[currentSlide]) {
-                slides[currentSlide].classList.add('active');
-            }
-            if (dots[currentSlide]) {
-                dots[currentSlide].classList.add('active');
-            }
-        }
-
-        function startCarousel() {
-            // Parar carrossel anterior se existir
-            if (carouselInterval) {
-                clearInterval(carouselInterval);
-            }
-            
-            // Iniciar carrossel automático (mudar a cada 4 segundos)
-            carouselInterval = setInterval(() => {
-                changeSlide(1);
-            }, 4000);
-        }
-
-        // Pausar carrossel quando o mouse estiver sobre ele
-        document.addEventListener('DOMContentLoaded', function() {
-            const carouselContainer = document.querySelector('.carousel-container');
-            if (carouselContainer) {
-                carouselContainer.addEventListener('mouseenter', () => {
-                    if (carouselInterval) {
-                        clearInterval(carouselInterval);
-                    }
-                });
-                
-                carouselContainer.addEventListener('mouseleave', () => {
-                    startCarousel();
-                });
-            }
-        });
     </script>
 
 </body>

@@ -19,10 +19,13 @@ class User:
 
         try:
             hashed_password = hashlib.sha256(password.encode()).hexdigest()
+            # Converter is_admin para inteiro (0 ou 1) para SQLite
+            is_admin_int = 1 if is_admin else 0
+
             cursor = conn.execute('''
                 INSERT INTO users (name, email, password, is_admin)
                 VALUES (?, ?, ?, ?)
-            ''', (name, email, hashed_password, is_admin))
+            ''', (name, email, hashed_password, is_admin_int))
             conn.commit()
             return cursor.lastrowid
         except Exception as e:
