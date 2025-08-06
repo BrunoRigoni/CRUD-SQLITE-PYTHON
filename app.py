@@ -6,7 +6,7 @@ from src.controllers.auth_controller import AuthController
 from src.controllers.product_controller import ProductController
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-here'
+app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 
 # Configuração CORS
 CORS(app, origins=['http://127.0.0.1:5500', 'http://localhost:5500',
@@ -208,4 +208,9 @@ if __name__ == '__main__':
     print("🚀 Servidor Flask iniciado!")
     print("🌐 URL: http://localhost:5000")
     print("💡 Use Live Server para acessar as páginas HTML")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+
+    # Configuração para produção
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('FLASK_ENV') == 'development'
+
+    app.run(debug=debug, host='0.0.0.0', port=port)
