@@ -15,7 +15,8 @@ else:
     print("📊 Banco de dados já existe: database.db")
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here')
+app.secret_key = os.environ.get(
+    'SECRET_KEY', '33d4a5d98ad218beebc1a5acfd22cccd')
 
 # Configuração CORS
 CORS(app, origins=[
@@ -26,7 +27,7 @@ CORS(app, origins=[
     'https://crud-sqlite-python.onrender.com',
     'https://*.onrender.com',
     'https://*.render.com'
-], supports_credentials=True)
+], supports_credentials=True, allow_headers=['Content-Type'], methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 
 # Rotas principais
 
@@ -69,8 +70,13 @@ def client_register():
 
 @app.route('/overview')
 def overview():
+    print(f"DEBUG: Tentativa de acesso ao overview - Session: {session}")
+    print(f"DEBUG: user_id na sessão: {session.get('user_id')}")
+    print(f"DEBUG: user_name na sessão: {session.get('user_name')}")
     if 'user_id' not in session:
+        print("DEBUG: Usuário não autenticado, redirecionando para login")
         return redirect(url_for('seller_login'))
+    print(f"DEBUG: Usuário autenticado: {session.get('user_name')}")
     return render_template('overview.html')
 
 

@@ -6,7 +6,7 @@ class SellerLogin {
         this.emailInput = document.getElementById('email');
         this.passwordInput = document.getElementById('password');
         this.messageDiv = document.getElementById('message');
-        this.apiBaseUrl = '';
+        this.apiBaseUrl = window.location.origin;
         
         this.init();
     }
@@ -235,21 +235,18 @@ class SellerLogin {
             if (response.valid) {
                 // Login bem-sucedido
                 console.log('Login realizado com sucesso!');
+                console.log('Resposta do servidor:', response);
                 
                 // Armazenar dados do usuário
                 localStorage.setItem('user', JSON.stringify(response.user));
                 
                 // Redirecionar para o dashboard
-                if (window.location.port === '5500' || window.location.hostname === '127.0.0.1') {
-                    // Se estiver usando Live Server, abrir em nova aba
-                    window.open('/overview', '_blank');
-                } else {
-                    // Se estiver em produção, redirecionar na mesma aba
-                    window.location.replace('/overview');
-                }
+                console.log('Redirecionando para /overview...');
+                window.location.href = '/overview';
                 
             } else {
                 // Login falhou
+                console.log('Login falhou:', response);
                 this.showError(response.message || 'Erro ao fazer login');
             }
             
@@ -265,6 +262,9 @@ class SellerLogin {
 
     async validateWithServer(formData) {
         try {
+            console.log('Enviando requisição para:', `${this.apiBaseUrl}/api/validate_user`);
+            console.log('Dados enviados:', formData);
+            
             const response = await fetch(`${this.apiBaseUrl}/api/validate_user`, {
                 method: 'POST',
                 headers: {
@@ -274,7 +274,9 @@ class SellerLogin {
                 body: JSON.stringify(formData)
             });
             
+            console.log('Resposta recebida:', response);
             const data = await response.json();
+            console.log('Dados da resposta:', data);
             
             if (!response.ok) {
                 throw new Error(data.message || 'Erro na requisição');

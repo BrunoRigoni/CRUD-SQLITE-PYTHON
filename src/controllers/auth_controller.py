@@ -38,6 +38,7 @@ class AuthController:
                 session['user_email'] = user.email
                 session['is_admin'] = user.is_admin
 
+                print(f"DEBUG: Sessão criada: {session}")
                 print(f"DEBUG: Login bem-sucedido para: {user.name}")
                 return jsonify({
                     'valid': True,
