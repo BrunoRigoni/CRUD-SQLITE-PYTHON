@@ -64,13 +64,17 @@
         <nav>
             <div class="nav-container">
                 <ul class="nav-menu">
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/products">Products</a></li>
-                    <li><a href="/sales">Sales</a></li>
-                    <li><a href="/cart">Cart</a></li>
+                    <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
+                    <li class="search-container">
+                        <input type="text" id="search" placeholder="Pesquisar produtos..." onkeyup="performSearch()">
+                        <button class="search-btn" onclick="performSearch()">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </li>
+                    <li><a href="/cart"><i class="fas fa-shopping-cart"></i> Cart</a></li>
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" onclick="toggleLoginDropdown(event)">
-                            Login <i class="fas fa-chevron-down"></i>
+                            <i class="fas fa-sign-in-alt"></i> Login <i class="fas fa-chevron-down"></i>
                         </a>
                         <ul class="dropdown-menu" id="login-dropdown">
                             <li><a href="/seller_login" class="dropdown-item">
