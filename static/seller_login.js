@@ -1,15 +1,12 @@
 // Seller Login JavaScript - Validação e Conexão com Flask (Live Server)
 
-class SellerLoginValidator {
+class SellerLogin {
     constructor() {
-        this.form = document.querySelector('.login-form');
-        this.emailInput = document.querySelector('input[name="email"]');
-        this.passwordInput = document.querySelector('input[name="password"]');
-        this.submitButton = document.querySelector('button[type="submit"]');
-        this.errorContainer = null;
-        
-        // URL base para APIs (ajuste conforme necessário)
-        this.apiBaseUrl = 'http://localhost:5000';
+        this.form = document.getElementById('loginForm');
+        this.emailInput = document.getElementById('email');
+        this.passwordInput = document.getElementById('password');
+        this.messageDiv = document.getElementById('message');
+        this.apiBaseUrl = '';
         
         this.init();
     }
@@ -242,16 +239,13 @@ class SellerLoginValidator {
                 // Armazenar dados do usuário
                 localStorage.setItem('user', JSON.stringify(response.user));
                 
-                // Redirecionar imediatamente
-                console.log('Redirecionando para overview...');
-                
-                // Verificar se estamos no Live Server
-                if (window.location.port === '5500') {
-                    // Se estiver no Live Server, abrir em nova aba
-                    window.open('http://localhost:5000/overview', '_blank');
+                // Redirecionar para o dashboard
+                if (window.location.port === '5500' || window.location.hostname === '127.0.0.1') {
+                    // Se estiver usando Live Server, abrir em nova aba
+                    window.open('/overview', '_blank');
                 } else {
-                    // Se estiver no Flask, redirecionar normalmente
-                    window.location.replace('http://localhost:5000/overview');
+                    // Se estiver em produção, redirecionar na mesma aba
+                    window.location.replace('/overview');
                 }
                 
             } else {
@@ -323,13 +317,13 @@ class SellerLoginValidator {
 document.addEventListener('DOMContentLoaded', function() {
     // Verificar se estamos na página de login
     if (document.querySelector('.login-form')) {
-        new SellerLoginValidator();
+        new SellerLogin();
     }
 });
 
 // Função global para validação externa
 window.validateSellerLogin = function(email, password) {
-    const validator = new SellerLoginValidator();
+    const validator = new SellerLogin();
     return validator.validateDatabaseCredentials(email, password);
 };
 

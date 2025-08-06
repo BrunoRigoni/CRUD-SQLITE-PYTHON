@@ -21,7 +21,7 @@ gunicorn app:app
 4. **Environment Variables**:
    - `FLASK_ENV`: `production`
    - `FLASK_APP`: `app.py`
-   - `SECRET_KEY`: `sua-chave-secreta-aqui` (substitua por uma chave segura)
+   - `SECRET_KEY`: `33d4a5d98ad218beebc1a5acfd22cccd`
    - `PORT`: `10000` (Render.com usa esta porta por padrão)
 
 ### Estrutura do Projeto

@@ -65,13 +65,14 @@ class Dashboard {
         if (window.location.port === '5500' || window.location.hostname === '127.0.0.1') {
             this.loadPageContent(path);
         } else {
+            // Se estiver em produção, redirecionar normalmente
             window.location.href = path;
         }
     }
 
     async loadPageContent(path) {
         try {
-            const response = await fetch(`http://localhost:5000${path}`);
+            const response = await fetch(path);
             if (response.ok) {
                 const html = await response.text();
                 // Extrair apenas o conteúdo do main
@@ -97,7 +98,7 @@ class Dashboard {
         } catch (error) {
             console.error('Erro na navegação:', error);
             // Fallback: tentar redirecionamento direto
-            window.location.href = `http://localhost:5000${path}`;
+            window.location.href = path;
         }
     }
 
@@ -285,11 +286,7 @@ window.navigateTo = function(path) {
         window.dashboardInstance.navigateTo(path);
     } else {
         // Fallback se a instância não estiver disponível
-        if (window.location.port === '5500' || window.location.hostname === '127.0.0.1') {
-            window.location.href = `http://localhost:5000${path}`;
-        } else {
-            window.location.href = path;
-        }
+        window.location.href = path;
     }
 };
 

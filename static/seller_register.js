@@ -1,17 +1,14 @@
 // Seller Register JavaScript - Validação e Conexão com Flask (Live Server)
 
-class SellerRegisterValidator {
+class SellerRegister {
     constructor() {
-        this.form = document.querySelector('.login-form');
-        this.nameInput = document.querySelector('input[name="name"]');
-        this.emailInput = document.querySelector('input[name="email"]');
-        this.passwordInput = document.querySelector('input[name="password"]');
-        this.confirmPasswordInput = document.querySelector('input[name="confirm_password"]');
-        this.submitButton = document.querySelector('button[type="submit"]');
-        this.errorContainer = null;
-        
-        // URL base para APIs (ajuste conforme necessário)
-        this.apiBaseUrl = 'http://localhost:5000';
+        this.form = document.getElementById('registerForm');
+        this.nameInput = document.getElementById('name');
+        this.emailInput = document.getElementById('email');
+        this.passwordInput = document.getElementById('password');
+        this.confirmPasswordInput = document.getElementById('confirmPassword');
+        this.messageDiv = document.getElementById('message');
+        this.apiBaseUrl = '';
         
         this.init();
     }
@@ -359,6 +356,6 @@ class SellerRegisterValidator {
 document.addEventListener('DOMContentLoaded', function() {
     // Verificar se estamos na página de registro
     if (document.querySelector('.login-form') && document.querySelector('input[name="name"]')) {
-        new SellerRegisterValidator();
+        new SellerRegister();
     }
 }); 

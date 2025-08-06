@@ -4,22 +4,36 @@ import os
 from src.database.connection import init_db
 from src.controllers.auth_controller import AuthController
 from src.controllers.product_controller import ProductController
+from datetime import datetime
+
+# Inicializar banco de dados se não existir
+if not os.path.exists('database.db'):
+    print("📊 Inicializando banco de dados...")
+    init_db()
+    print("📊 Banco de dados criado: database.db")
+else:
+    print("📊 Banco de dados já existe: database.db")
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 
 # Configuração CORS
-CORS(app, origins=['http://127.0.0.1:5500', 'http://localhost:5500',
-     'http://127.0.0.1:5000', 'http://localhost:5000',
-                   'http://127.0.0.1:3000', 'http://localhost:3000',
-                   'http://127.0.0.1:5501', 'http://localhost:5501'],
-     supports_credentials=True)
+CORS(app, origins=[
+    'http://127.0.0.1:5500', 'http://localhost:5500',
+    'http://127.0.0.1:5000', 'http://localhost:5000',
+    'http://127.0.0.1:3000', 'http://localhost:3000',
+    'http://127.0.0.1:5501', 'http://localhost:5501',
+    'https://crud-sqlite-python.onrender.com',
+    'https://*.onrender.com',
+    'https://*.render.com'
+], supports_credentials=True)
 
 # Rotas principais
 
 
 @app.route('/')
 def index():
+    print("Acessando página inicial")
     return render_template('index.html')
 
 
@@ -171,6 +185,17 @@ def check_db():
             'message': f'Erro ao verificar banco: {str(e)}'
         }), 500
 
+
+@app.route('/api/debug')
+def debug():
+    """Rota de debug para verificar se a aplicação está funcionando"""
+    return jsonify({
+        'success': True,
+        'message': 'Aplicação Flask funcionando!',
+        'timestamp': datetime.now().isoformat(),
+        'environment': os.environ.get('FLASK_ENV', 'development')
+    })
+
 # APIs de Produtos
 
 
@@ -191,20 +216,51 @@ def delete_product(product_id):
 
 @app.route('/api/public_products')
 def get_public_products():
-    return ProductController.get_all_products()
+    print("Acessando /api/public_products")
+    try:
+        result = ProductController.get_all_products()
+        print(f"Resultado: {result}")
+        return result
+    except Exception as e:
+        print(f"Erro na rota /api/public_products: {e}")
+        return jsonify({
+            'success': False,
+            'message': f'Erro ao carregar produtos: {str(e)}'
+        }), 500
 
 
 @app.route('/api/categories')
 def get_categories():
-    return ProductController.get_categories()
+    print("Acessando /api/categories")
+    try:
+        result = ProductController.get_categories()
+        print(f"Resultado: {result}")
+        return result
+    except Exception as e:
+        print(f"Erro na rota /api/categories: {e}")
+        return jsonify({
+            'success': False,
+            'message': f'Erro ao carregar categorias: {str(e)}'
+        }), 500
+
+
+@app.route('/api/init_db')
+def init_database():
+    """Rota para inicializar o banco de dados"""
+    try:
+        init_db()
+        return jsonify({
+            'success': True,
+            'message': 'Banco de dados inicializado com sucesso!'
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Erro ao inicializar banco: {str(e)}'
+        }), 500
 
 
 if __name__ == '__main__':
-    # Inicializar banco apenas se não existir
-    if not os.path.exists('database.db'):
-        init_db()
-        print("📊 Banco de dados criado: database.db")
-
     print("🚀 Servidor Flask iniciado!")
     print("🌐 URL: http://localhost:5000")
     print("💡 Use Live Server para acessar as páginas HTML")
