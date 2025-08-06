@@ -2,15 +2,45 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 import sqlite3
 import hashlib
 import os
+import uuid
+from datetime import datetime
+from werkzeug.utils import secure_filename
 from flask_cors import CORS
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'
 
 CORS(app, origins=['http://127.0.0.1:5500', 'http://localhost:5500',
-     'http://127.0.0.1:3000', 'http://localhost:3000'])
+     'http://127.0.0.1:5000', 'http://localhost:5000',
+                   'http://127.0.0.1:3000', 'http://localhost:3000',
+                   'http://127.0.0.1:5501', 'http://localhost:5501'],
+     supports_credentials=True)
 
 DATABASE = 'database.db'
+
+# Configurações para upload de arquivos
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+# Criar pasta de uploads se não existir
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def save_image(file):
+    if file and allowed_file(file.filename):
+        # Gerar nome único para o arquivo
+        filename = secure_filename(file.filename)
+        unique_filename = f"{uuid.uuid4().hex}_{filename}"
+        filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
+        file.save(filepath)
+        return unique_filename
+    return None
 
 
 def get_db_connection():
@@ -50,6 +80,7 @@ def init_db():
                 categoria TEXT,
                 data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 usuario_email TEXT NOT NULL,
+                image_path TEXT,
                 FOREIGN KEY (usuario_email) REFERENCES users (email)
             )
         ''')
@@ -257,31 +288,57 @@ def seller_register():
 
 @app.route('/overview')
 def overview():
+    # Verificar se o usuário está logado
+    if 'user_id' not in session:
+        return redirect(url_for('seller_login'))
     return render_template('overview.html')
 
 
 @app.route('/products')
 def products():
+    # Verificar se o usuário está logado
+    if 'user_id' not in session:
+        return redirect(url_for('seller_login'))
     return render_template('products.html')
+
+
+@app.route('/add_product')
+def add_product():
+    # Verificar se o usuário está logado
+    if 'user_id' not in session:
+        return redirect(url_for('seller_login'))
+    return render_template('add_product.html')
 
 
 @app.route('/customers')
 def customers():
+    # Verificar se o usuário está logado
+    if 'user_id' not in session:
+        return redirect(url_for('seller_login'))
     return render_template('customers.html')
 
 
 @app.route('/sales')
 def sales():
+    # Verificar se o usuário está logado
+    if 'user_id' not in session:
+        return redirect(url_for('seller_login'))
     return render_template('sales.html')
 
 
 @app.route('/reports')
 def reports():
+    # Verificar se o usuário está logado
+    if 'user_id' not in session:
+        return redirect(url_for('seller_login'))
     return render_template('reports.html')
 
 
 @app.route('/settings')
 def settings():
+    # Verificar se o usuário está logado
+    if 'user_id' not in session:
+        return redirect(url_for('seller_login'))
     return render_template('settings.html')
 
 
@@ -328,6 +385,12 @@ def validate_user():
         conn.close()
 
         if user:
+            # Criar sessão do usuário
+            session['user_id'] = user['id']
+            session['user_name'] = user['name']
+            session['user_email'] = user['email']
+            session['is_admin'] = user['is_admin']
+
             return jsonify({
                 'valid': True,
                 'message': 'Login válido!',
@@ -421,10 +484,315 @@ def check_db():
         }), 500
 
 
+# APIs para Produtos
+@app.route('/api/add_product', methods=['POST'])
+def api_add_product():
+    try:
+        # Verificar se o usuário está logado
+        if 'user_id' not in session:
+            return jsonify({
+                'success': False,
+                'message': 'Usuário não está logado!'
+            }), 401
+
+        # Obter dados do formulário
+        name = request.form.get('name', '').strip()
+        price = request.form.get('price', '')
+        quantity = request.form.get('quantity', '')
+        category = request.form.get('category', '').strip()
+        image = request.files.get('image')
+
+        # Validações
+        if not name:
+            return jsonify({
+                'success': False,
+                'message': 'Nome do produto é obrigatório!'
+            }), 400
+
+        try:
+            price = float(price)
+            if price < 0:
+                return jsonify({
+                    'success': False,
+                    'message': 'Preço deve ser maior ou igual a zero!'
+                }), 400
+        except ValueError:
+            return jsonify({
+                'success': False,
+                'message': 'Preço inválido!'
+            }), 400
+
+        try:
+            quantity = int(quantity)
+            if quantity < 0:
+                return jsonify({
+                    'success': False,
+                    'message': 'Quantidade deve ser maior ou igual a zero!'
+                }), 400
+        except ValueError:
+            return jsonify({
+                'success': False,
+                'message': 'Quantidade inválida!'
+            }), 400
+
+        if not category:
+            return jsonify({
+                'success': False,
+                'message': 'Categoria é obrigatória!'
+            }), 400
+
+        if not image:
+            return jsonify({
+                'success': False,
+                'message': 'Imagem é obrigatória!'
+            }), 400
+
+        # Salvar imagem
+        image_path = save_image(image)
+
+        if not image_path:
+            return jsonify({
+                'success': False,
+                'message': 'Erro ao salvar imagem!'
+            }), 400
+
+        # Conectar ao banco
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({
+                'success': False,
+                'message': 'Erro de conexão com banco de dados!'
+            }), 500
+
+        # Inserir produto
+        try:
+            cursor = conn.execute('''
+                INSERT INTO produtos (nome, preco, quantidade, categoria, usuario_email, image_path, data_cadastro)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (name, price, quantity, category, session['user_email'], image_path, datetime.now()))
+
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            conn.close()
+            raise e
+
+        return jsonify({
+            'success': True,
+            'message': 'Produto adicionado com sucesso!'
+        })
+
+    except Exception as e:
+        print(f"Erro ao adicionar produto: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Erro interno do servidor!'
+        }), 500
+
+
+@app.route('/api/get_products')
+def get_products():
+    try:
+        # Verificar se o usuário está logado
+        if 'user_id' not in session:
+            return jsonify({
+                'success': False,
+                'message': 'Usuário não está logado!'
+            }), 401
+
+        # Conectar ao banco
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({
+                'success': False,
+                'message': 'Erro de conexão com banco de dados!'
+            }), 500
+
+        # Buscar produtos do usuário
+        cursor = conn.execute('''
+            SELECT id, nome, preco, quantidade, categoria, data_cadastro, image_path
+            FROM produtos
+            WHERE usuario_email = ?
+            ORDER BY data_cadastro DESC
+        ''', (session['user_email'],))
+
+        products = []
+        for row in cursor.fetchall():
+            products.append({
+                'id': row['id'],
+                'nome': row['nome'],
+                'preco': row['preco'],
+                'quantidade': row['quantidade'],
+                'categoria': row['categoria'],
+                'data_cadastro': row['data_cadastro'],
+                'image_path': row['image_path']
+            })
+
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'products': products
+        })
+
+    except Exception as e:
+        print(f"Erro ao buscar produtos: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Erro interno do servidor!'
+        }), 500
+
+
+@app.route('/api/delete_product/<int:product_id>', methods=['DELETE'])
+def delete_product(product_id):
+    try:
+        # Verificar se o usuário está logado
+        if 'user_id' not in session:
+            return jsonify({
+                'success': False,
+                'message': 'Usuário não está logado!'
+            }), 401
+
+        # Conectar ao banco
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({
+                'success': False,
+                'message': 'Erro de conexão com banco de dados!'
+            }), 500
+
+        # Verificar se o produto pertence ao usuário
+        cursor = conn.execute('''
+            SELECT image_path FROM produtos 
+            WHERE id = ? AND usuario_email = ?
+        ''', (product_id, session['user_email']))
+
+        product = cursor.fetchone()
+        if not product:
+            conn.close()
+            return jsonify({
+                'success': False,
+                'message': 'Produto não encontrado!'
+            }), 404
+
+        # Deletar imagem se existir
+        if product['image_path']:
+            try:
+                image_path = os.path.join(UPLOAD_FOLDER, product['image_path'])
+                if os.path.exists(image_path):
+                    os.remove(image_path)
+            except Exception as e:
+                print(f"Erro ao deletar imagem: {e}")
+
+        # Deletar produto
+        conn.execute('DELETE FROM produtos WHERE id = ?', (product_id,))
+        conn.commit()
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'message': 'Produto deletado com sucesso!'
+        })
+
+    except Exception as e:
+        print(f"Erro ao deletar produto: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Erro interno do servidor!'
+        }), 500
+
+
+@app.route('/api/public_products')
+def get_public_products():
+    """API para buscar produtos públicos para exibição no site"""
+    try:
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({
+                'success': False,
+                'message': 'Erro de conexão com banco de dados!'
+            }), 500
+
+        # Buscar todos os produtos com informações do vendedor
+        cursor = conn.execute('''
+            SELECT p.id, p.nome, p.preco, p.quantidade, p.categoria, p.image_path, 
+                   p.data_cadastro, p.usuario_email, u.name as vendedor_nome
+            FROM produtos p
+            LEFT JOIN users u ON p.usuario_email = u.email
+            ORDER BY p.data_cadastro DESC
+        ''')
+
+        products = []
+        for row in cursor.fetchall():
+            products.append({
+                'id': row[0],
+                'nome': row[1],
+                'preco': float(row[2]),
+                'quantidade': row[3],
+                'categoria': row[4],
+                'image_path': row[5],
+                'data_cadastro': row[6],
+                'usuario_email': row[7],
+                'vendedor_nome': row[8] or 'Vendedor'
+            })
+
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'products': products
+        })
+
+    except Exception as e:
+        print(f"Erro ao buscar produtos públicos: {e}")
+        return jsonify({
+            'success': False,
+            'message': f'Erro ao buscar produtos: {str(e)}'
+        }), 500
+
+
+@app.route('/api/categories')
+def get_categories():
+    """API para buscar categorias únicas dos produtos"""
+    try:
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({
+                'success': False,
+                'message': 'Erro de conexão com banco de dados!'
+            }), 500
+
+        # Buscar categorias únicas
+        cursor = conn.execute('''
+            SELECT DISTINCT categoria 
+            FROM produtos 
+            WHERE categoria IS NOT NULL AND categoria != ''
+            ORDER BY categoria
+        ''')
+
+        categories = [row[0] for row in cursor.fetchall()]
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'categories': categories
+        })
+
+    except Exception as e:
+        print(f"Erro ao buscar categorias: {e}")
+        return jsonify({
+            'success': False,
+            'message': f'Erro ao buscar categorias: {str(e)}'
+        }), 500
+
+
 if __name__ == '__main__':
-    init_db()
+    # Inicializar banco apenas se não existir
+    if not os.path.exists(DATABASE):
+        init_db()
+        print("📊 Banco de dados criado: database.db")
+
     print("🚀 Servidor Flask iniciado!")
-    print("📊 Banco de dados: database.db")
-    print("🌐 URLs: http://localhost:5000")
+    print("🌐 URL: http://localhost:5000")
     print("💡 Use Live Server para acessar as páginas HTML")
     app.run(debug=True, host='0.0.0.0', port=5000)

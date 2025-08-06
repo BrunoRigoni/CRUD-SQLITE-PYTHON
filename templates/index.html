@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="http://localhost:5000/static/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <title>Document</title>
 </head>
@@ -25,9 +25,18 @@
     <main>
 
         <div class="banner">
-            <img src="/static/img/produto1.png" alt="Banner Product 1">
-            <img src="/static/img/produto1.png" alt="Banner Product 2">
-            <img src="/static/img/produto1.png" alt="Banner Product 3">
+            <div class="carousel-container">
+                <div class="carousel-slides" id="carousel-slides">
+                    <!-- Imagens do carrossel serão carregadas dinamicamente aqui -->
+                </div>
+                <div class="carousel-controls">
+                    <button class="carousel-btn prev" onclick="changeSlide(-1)">❮</button>
+                    <button class="carousel-btn next" onclick="changeSlide(1)">❯</button>
+                </div>
+                <div class="carousel-dots" id="carousel-dots">
+                    <!-- Pontos de navegação serão criados dinamicamente -->
+                </div>
+            </div>
         </div>
 
         <div id="products">
@@ -36,23 +45,15 @@
                     <i class="fas fa-chevron-down"></i>
                     Categories
                 </button>
-                <ul class="category-list toggle-list">
-                    <li class="category-item" onclick="selectCategory(this)">Electronics</li>
-                    <li class="category-item" onclick="selectCategory(this)">Clothing</li>
-                    <li class="category-item" onclick="selectCategory(this)">Home & Garden</li>
-                    <li class="category-item" onclick="selectCategory(this)">Sports</li>
-                    <li class="category-item" onclick="selectCategory(this)">Books</li>
-                    <li class="category-item" onclick="selectCategory(this)">Toys</li>
-                    <li class="category-item" onclick="selectCategory(this)">Automotive</li>
-                    <li class="category-item" onclick="selectCategory(this)">Health & Beauty</li>
+                <ul class="category-list toggle-list" id="categories-list">
+                    <li class="category-item" onclick="selectCategory(this)" data-category="">All Products</li>
+                    <!-- Categorias serão carregadas dinamicamente aqui -->
                 </ul>
             </div>
             
-            <div class="card">
-                <img src="/static/img/produto1.png" alt="Product 1">
-                <h3>Product 1</h3>
-                <p>R$ 100,00</p>
-                <button>Add to cart</button>
+            <div id="products-container" class="products-grid">
+                <!-- Produtos serão carregados dinamicamente aqui -->
+                <div class="loading">Carregando produtos...</div>
             </div>
         </div>
     </main>
@@ -61,17 +62,115 @@
     </footer>
 
     <script>
+        let allProducts = [];
+        let currentCategory = '';
+        let currentSlide = 0;
+        let carouselInterval;
+
+        // Carregar produtos e categorias quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCategories();
+            loadProducts();
+        });
+
+        async function loadCategories() {
+            try {
+                const response = await fetch('http://localhost:5000/api/categories');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayCategories(data.categories);
+                } else {
+                    console.error('Erro ao carregar categorias:', data.message);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar categorias:', error);
+            }
+        }
+
+        function displayCategories(categories) {
+            const categoriesList = document.getElementById('categories-list');
+            const allProductsItem = categoriesList.querySelector('[data-category=""]');
+            
+            // Limpar categorias existentes (exceto "All Products")
+            const existingCategories = categoriesList.querySelectorAll('.category-item:not([data-category=""])');
+            existingCategories.forEach(item => item.remove());
+            
+            // Adicionar categorias do banco
+            categories.forEach(category => {
+                const li = document.createElement('li');
+                li.className = 'category-item';
+                li.setAttribute('data-category', category);
+                li.onclick = function() { selectCategory(this); };
+                li.textContent = category;
+                categoriesList.appendChild(li);
+            });
+        }
+
+        async function loadProducts() {
+            try {
+                const response = await fetch('http://localhost:5000/api/public_products');
+                const data = await response.json();
+                
+                if (data.success) {
+                    allProducts = data.products;
+                    displayProducts(allProducts);
+                } else {
+                    showError('Erro ao carregar produtos: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar produtos:', error);
+                showError('Erro ao carregar produtos');
+            }
+        }
+
+        function displayProducts(products) {
+            const container = document.getElementById('products-container');
+            
+            if (products.length === 0) {
+                container.innerHTML = '<div class="no-products">Nenhum produto encontrado</div>';
+                return;
+            }
+
+            const productsHTML = products.map(product => {
+                const imageUrl = product.image_path ? `http://localhost:5000/static/uploads/${product.image_path}` : 'http://localhost:5000/static/img/default-image.png';
+                const price = new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(product.preco);
+
+                return `
+                    <div class="card" data-category="${product.categoria}">
+                        <img src="${imageUrl}" alt="${product.nome}" onerror="this.src='http://localhost:5000/static/img/default-image.png'">
+                        <h3>${product.nome}</h3>
+                        <p class="price">${price}</p>
+                        <p class="seller">Vendedor: ${product.vendedor_nome}</p>
+                        <p class="quantity">Quantidade: ${product.quantidade}</p>
+                        <button onclick="addToCart(${product.id})">Add to cart</button>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = productsHTML;
+            
+            // Criar carrossel com as imagens dos produtos
+            createCarousel(products);
+        }
+
         function performSearch() {
             const searchInput = document.getElementById('search');
-            const searchTerm = searchInput.value.trim();
+            const searchTerm = searchInput.value.trim().toLowerCase();
             
             if (searchTerm) {
-                // Aqui você pode implementar a lógica de pesquisa
-                console.log('Searching for:', searchTerm);
-                alert('Searching for: ' + searchTerm);
-                // Exemplo: window.location.href = '/search?q=' + encodeURIComponent(searchTerm);
+                const filteredProducts = allProducts.filter(product => 
+                    product.nome.toLowerCase().includes(searchTerm) ||
+                    product.categoria.toLowerCase().includes(searchTerm) ||
+                    product.vendedor_nome.toLowerCase().includes(searchTerm)
+                );
+                displayProducts(filteredProducts);
             } else {
-                alert('Please enter a search term');
+                // Se não há termo de busca, mostrar produtos da categoria atual
+                filterProductsByCategory(currentCategory);
             }
         }
 
@@ -100,13 +199,154 @@
             // Adiciona a classe active ao item clicado
             element.classList.add('active');
             
-            // Aqui você pode implementar a lógica para filtrar produtos por categoria
-            const selectedCategory = element.textContent;
-            console.log('Selected category:', selectedCategory);
-            
-            // Exemplo: filtrar produtos por categoria
-            // filterProductsByCategory(selectedCategory);
+            // Filtrar produtos por categoria
+            const selectedCategory = element.getAttribute('data-category');
+            currentCategory = selectedCategory;
+            filterProductsByCategory(selectedCategory);
         }
+
+        function filterProductsByCategory(category) {
+            if (!category || category === '') {
+                displayProducts(allProducts);
+            } else {
+                const filteredProducts = allProducts.filter(product => 
+                    product.categoria.toLowerCase() === category.toLowerCase()
+                );
+                displayProducts(filteredProducts);
+            }
+        }
+
+        function addToCart(productId) {
+            // Implementar lógica do carrinho aqui
+            alert('Produto adicionado ao carrinho! (Funcionalidade em desenvolvimento)');
+        }
+
+        function showError(message) {
+            const container = document.getElementById('products-container');
+            container.innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        // Funções do Carrossel
+        function createCarousel(products) {
+            const carouselSlides = document.getElementById('carousel-slides');
+            const carouselDots = document.getElementById('carousel-dots');
+            
+            // Filtrar produtos que têm imagens
+            const productsWithImages = products.filter(product => product.image_path);
+            
+            // Se não há produtos com imagens, usar imagem padrão
+            if (productsWithImages.length === 0) {
+                carouselSlides.innerHTML = `
+                    <div class="carousel-slide active">
+                        <img src="http://localhost:5000/static/img/default-image.png" alt="Produto em Destaque">
+                        <div class="carousel-caption">
+                            <h2>Bem-vindo à nossa loja!</h2>
+                            <p>Descubra produtos incríveis</p>
+                        </div>
+                    </div>
+                `;
+                carouselDots.innerHTML = '<span class="dot active"></span>';
+                return;
+            }
+            
+            // Criar slides do carrossel (máximo 5 produtos)
+            const slidesToShow = Math.min(productsWithImages.length, 5);
+            let slidesHTML = '';
+            let dotsHTML = '';
+            
+            for (let i = 0; i < slidesToShow; i++) {
+                const product = productsWithImages[i];
+                const imageUrl = `http://localhost:5000/static/uploads/${product.image_path}`;
+                const isActive = i === 0 ? 'active' : '';
+                
+                slidesHTML += `
+                    <div class="carousel-slide ${isActive}">
+                        <img src="${imageUrl}" alt="${product.nome}" onerror="this.src='http://localhost:5000/static/img/default-image.png'">
+                        <div class="carousel-caption">
+                            <h2>${product.nome}</h2>
+                            <p>R$ ${product.preco.toFixed(2)}</p>
+                            <p class="product-category">${product.categoria}</p>
+                        </div>
+                    </div>
+                `;
+                
+                dotsHTML += `<span class="dot ${isActive}" onclick="goToSlide(${i})"></span>`;
+            }
+            
+            carouselSlides.innerHTML = slidesHTML;
+            carouselDots.innerHTML = dotsHTML;
+            
+            // Iniciar carrossel automático
+            startCarousel();
+        }
+
+        function changeSlide(direction) {
+            const slides = document.querySelectorAll('.carousel-slide');
+            const dots = document.querySelectorAll('.dot');
+            
+            if (slides.length === 0) return;
+            
+            // Remover classe active do slide atual
+            slides[currentSlide].classList.remove('active');
+            dots[currentSlide].classList.remove('active');
+            
+            // Calcular novo slide
+            currentSlide += direction;
+            
+            // Loop do carrossel
+            if (currentSlide >= slides.length) currentSlide = 0;
+            if (currentSlide < 0) currentSlide = slides.length - 1;
+            
+            // Adicionar classe active ao novo slide
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+        }
+
+        function goToSlide(slideIndex) {
+            const slides = document.querySelectorAll('.carousel-slide');
+            const dots = document.querySelectorAll('.dot');
+            
+            if (slides.length === 0) return;
+            
+            // Remover classe active do slide atual
+            slides[currentSlide].classList.remove('active');
+            dots[currentSlide].classList.remove('active');
+            
+            // Definir novo slide
+            currentSlide = slideIndex;
+            
+            // Adicionar classe active ao novo slide
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+        }
+
+        function startCarousel() {
+            // Parar carrossel anterior se existir
+            if (carouselInterval) {
+                clearInterval(carouselInterval);
+            }
+            
+            // Iniciar carrossel automático (mudar a cada 4 segundos)
+            carouselInterval = setInterval(() => {
+                changeSlide(1);
+            }, 4000);
+        }
+
+        // Pausar carrossel quando o mouse estiver sobre ele
+        document.addEventListener('DOMContentLoaded', function() {
+            const carouselContainer = document.querySelector('.carousel-container');
+            if (carouselContainer) {
+                carouselContainer.addEventListener('mouseenter', () => {
+                    if (carouselInterval) {
+                        clearInterval(carouselInterval);
+                    }
+                });
+                
+                carouselContainer.addEventListener('mouseleave', () => {
+                    startCarousel();
+                });
+            }
+        });
     </script>
 
 </body>

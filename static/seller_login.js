@@ -237,21 +237,22 @@ class SellerLoginValidator {
             
             if (response.valid) {
                 // Login bem-sucedido
-                this.showError('Login realizado com sucesso! Redirecionando...', 'success');
+                console.log('Login realizado com sucesso!');
                 
                 // Armazenar dados do usuário
                 localStorage.setItem('user', JSON.stringify(response.user));
                 
-                // Redirecionar após 1.5 segundos
-                setTimeout(() => {
-                    // Redirecionar para overview (página principal do dashboard)
-                    if (window.location.port === '5500' || window.location.hostname === '127.0.0.1') {
-                        // Se estiver no Live Server, redirecionar para Flask
-                        window.location.href = 'http://localhost:5000/overview';
-                    } else {
-                        window.location.href = '/overview';
-                    }
-                }, 1500);
+                // Redirecionar imediatamente
+                console.log('Redirecionando para overview...');
+                
+                // Verificar se estamos no Live Server
+                if (window.location.port === '5500') {
+                    // Se estiver no Live Server, abrir em nova aba
+                    window.open('http://localhost:5000/overview', '_blank');
+                } else {
+                    // Se estiver no Flask, redirecionar normalmente
+                    window.location.replace('http://localhost:5000/overview');
+                }
                 
             } else {
                 // Login falhou
@@ -275,6 +276,7 @@ class SellerLoginValidator {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
                 body: JSON.stringify(formData)
             });
             
@@ -300,6 +302,7 @@ class SellerLoginValidator {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
                 body: JSON.stringify({ email, password })
             });
             
