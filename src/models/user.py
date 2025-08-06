@@ -36,26 +36,43 @@ class User:
         """Autentica um usuário"""
         conn = get_db_connection()
         if not conn:
+            print("DEBUG: Falha ao conectar com o banco de dados")
             return None
 
         try:
             hashed_password = hashlib.sha256(password.encode()).hexdigest()
+            print(f"DEBUG: Tentativa de autenticação para email: {email}")
+
             cursor = conn.execute('''
                 SELECT id, name, email, is_admin FROM users 
                 WHERE email = ? AND password = ?
             ''', (email, hashed_password))
 
             user_data = cursor.fetchone()
+            print(f"DEBUG: Dados do usuário encontrados: {user_data}")
+
             if user_data:
-                return User(
+                # Tratar o campo is_admin corretamente (SQLite retorna 0/1)
+                is_admin = bool(
+                    user_data['is_admin']) if user_data['is_admin'] is not None else False
+                print(f"DEBUG: is_admin tratado: {is_admin}")
+
+                user = User(
                     id=user_data['id'],
                     name=user_data['name'],
                     email=user_data['email'],
-                    is_admin=user_data['is_admin']
+                    is_admin=is_admin
                 )
+                print(
+                    f"DEBUG: Usuário criado: {user.name} (admin: {user.is_admin})")
+                return user
+            else:
+                print("DEBUG: Nenhum usuário encontrado com essas credenciais")
             return None
         except Exception as e:
             print(f"Erro ao autenticar usuário: {e}")
+            import traceback
+            traceback.print_exc()
             return None
         finally:
             conn.close()
@@ -75,11 +92,15 @@ class User:
 
             user_data = cursor.fetchone()
             if user_data:
+                # Tratar o campo is_admin corretamente (SQLite retorna 0/1)
+                is_admin = bool(
+                    user_data['is_admin']) if user_data['is_admin'] is not None else False
+
                 return User(
                     id=user_data['id'],
                     name=user_data['name'],
                     email=user_data['email'],
-                    is_admin=user_data['is_admin']
+                    is_admin=is_admin
                 )
             return None
         except Exception as e:

@@ -134,6 +134,7 @@ class AuthController:
         try:
             data = request.get_json()
             if not data:
+                print("DEBUG: Dados inválidos no client_login")
                 return jsonify({
                     'success': False,
                     'message': 'Dados inválidos!'
@@ -142,7 +143,10 @@ class AuthController:
             email = data.get('email', '').strip().lower()
             password = data.get('password', '').strip()
 
+            print(f"DEBUG: Tentativa de login para email: {email}")
+
             if not email or not password:
+                print("DEBUG: Email ou senha vazios")
                 return jsonify({
                     'success': False,
                     'message': 'Email e senha são obrigatórios!'
@@ -150,12 +154,19 @@ class AuthController:
 
             # Verificar se é um cliente (usuário não-admin)
             user = User.authenticate(email, password)
+            print(f"DEBUG: Resultado da autenticação: {user}")
+
+            if user:
+                print(f"DEBUG: Usuário encontrado - is_admin: {user.is_admin}")
+
             if user and not user.is_admin:
                 # Criar sessão do cliente
                 session['client_id'] = user.id
                 session['client_name'] = user.name
                 session['client_email'] = user.email
 
+                print(
+                    f"DEBUG: Login de cliente bem-sucedido para: {user.name}")
                 return jsonify({
                     'success': True,
                     'message': 'Login realizado com sucesso!',
@@ -166,6 +177,7 @@ class AuthController:
                     }
                 })
             else:
+                print("DEBUG: Falha na autenticação - usuário não encontrado ou é admin")
                 return jsonify({
                     'success': False,
                     'message': 'Email ou senha incorretos!'
@@ -173,6 +185,8 @@ class AuthController:
 
         except Exception as e:
             print(f"Erro no login do cliente: {e}")
+            import traceback
+            traceback.print_exc()
             return jsonify({
                 'success': False,
                 'message': 'Erro interno do servidor!'
