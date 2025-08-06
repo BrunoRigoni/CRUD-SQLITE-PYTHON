@@ -45,6 +45,7 @@ class User:
         try:
             hashed_password = hashlib.sha256(password.encode()).hexdigest()
             print(f"DEBUG: Tentativa de autenticação para email: {email}")
+            print(f"DEBUG: Senha hash: {hashed_password[:10]}...")
 
             cursor = conn.execute('''
                 SELECT id, name, email, is_admin FROM users 
@@ -71,6 +72,14 @@ class User:
                 return user
             else:
                 print("DEBUG: Nenhum usuário encontrado com essas credenciais")
+                # Verificar se o email existe
+                cursor = conn.execute(
+                    'SELECT id FROM users WHERE email = ?', (email,))
+                email_exists = cursor.fetchone()
+                if email_exists:
+                    print("DEBUG: Email existe, mas senha está incorreta")
+                else:
+                    print("DEBUG: Email não existe no banco")
             return None
         except Exception as e:
             print(f"Erro ao autenticar usuário: {e}")

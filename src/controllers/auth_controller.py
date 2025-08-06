@@ -7,7 +7,13 @@ class AuthController:
     def login():
         """Controlador para login de usuários"""
         try:
+            print("DEBUG: Método login chamado")
+            print(f"DEBUG: Content-Type: {request.content_type}")
+            print(f"DEBUG: Method: {request.method}")
+
             data = request.get_json()
+            print(f"DEBUG: Dados recebidos: {data}")
+
             if not data:
                 print("DEBUG: Dados inválidos no login")
                 return jsonify({

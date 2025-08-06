@@ -27,6 +27,9 @@ app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hora
 # Permitir que funcione em qualquer domínio
 app.config['SESSION_COOKIE_DOMAIN'] = None
 app.config['SESSION_COOKIE_PATH'] = '/'  # Definir path da sessão
+# Renovar sessão a cada requisição
+app.config['SESSION_REFRESH_EACH_REQUEST'] = True
+app.config['SESSION_COOKIE_NAME'] = 'session'  # Nome do cookie da sessão
 
 # Configuração CORS
 CORS(app, origins=[
@@ -37,7 +40,7 @@ CORS(app, origins=[
     'https://crud-sqlite-python.onrender.com',
     'https://*.onrender.com',
     'https://*.render.com'
-], supports_credentials=True)
+], supports_credentials=True, allow_headers=['Content-Type'], methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 
 # Rotas principais
 
