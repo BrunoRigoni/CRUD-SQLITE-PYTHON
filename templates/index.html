@@ -139,7 +139,7 @@
             const dropdown = document.getElementById('login-dropdown');
             const dropdownToggle = document.querySelector('.dropdown-toggle');
             
-            if (!dropdownToggle.contains(event.target) && !dropdown.contains(event.target)) {
+            if (dropdown && dropdownToggle && !dropdownToggle.contains(event.target) && !dropdown.contains(event.target)) {
                 dropdown.classList.remove('show');
             }
         });
@@ -167,6 +167,8 @@
 
         function displayCategories(categories) {
             const categoriesList = document.getElementById('categories-list');
+            if (!categoriesList) return;
+            
             const allProductsItem = categoriesList.querySelector('[data-category=""]');
             
             // Limpar categorias existentes (exceto "All Products")
@@ -203,6 +205,7 @@
 
         function displayProducts(products) {
             const container = document.getElementById('products-container');
+            if (!container) return;
             
             if (products.length === 0) {
                 container.innerHTML = '<div class="no-products">Nenhum produto encontrado</div>';
@@ -270,12 +273,16 @@
             const categoryList = document.querySelector('.category-list');
             const categoryToggle = document.querySelector('.category-toggle');
             
-            categoryList.classList.toggle('expanded');
-            categoryToggle.classList.toggle('expanded');
+            if (categoryList && categoryToggle) {
+                categoryList.classList.toggle('expanded');
+                categoryToggle.classList.toggle('expanded');
+            }
         }
 
         // Função para selecionar uma categoria
         function selectCategory(element) {
+            if (!element) return;
+            
             // Remove a classe active de todos os itens
             const allItems = document.querySelectorAll('.category-item');
             allItems.forEach(item => item.classList.remove('active'));
@@ -307,6 +314,7 @@
 
         function showError(message) {
             const container = document.getElementById('products-container');
+            if (!container) return;
             container.innerHTML = `<div class="error">${message}</div>`;
         }
 
@@ -314,6 +322,8 @@
         function createCarousel(products) {
             const carouselSlides = document.getElementById('carousel-slides');
             const carouselDots = document.getElementById('carousel-dots');
+            
+            if (!carouselSlides || !carouselDots) return;
             
             // Filtrar produtos que têm imagens
             const productsWithImages = products.filter(product => product.image_path);
@@ -368,11 +378,15 @@
             const slides = document.querySelectorAll('.carousel-slide');
             const dots = document.querySelectorAll('.dot');
             
-            if (slides.length === 0) return;
+            if (slides.length === 0 || dots.length === 0) return;
             
             // Remover classe active do slide atual
-            slides[currentSlide].classList.remove('active');
-            dots[currentSlide].classList.remove('active');
+            if (slides[currentSlide]) {
+                slides[currentSlide].classList.remove('active');
+            }
+            if (dots[currentSlide]) {
+                dots[currentSlide].classList.remove('active');
+            }
             
             // Calcular novo slide
             currentSlide += direction;
@@ -382,26 +396,38 @@
             if (currentSlide < 0) currentSlide = slides.length - 1;
             
             // Adicionar classe active ao novo slide
-            slides[currentSlide].classList.add('active');
-            dots[currentSlide].classList.add('active');
+            if (slides[currentSlide]) {
+                slides[currentSlide].classList.add('active');
+            }
+            if (dots[currentSlide]) {
+                dots[currentSlide].classList.add('active');
+            }
         }
 
         function goToSlide(slideIndex) {
             const slides = document.querySelectorAll('.carousel-slide');
             const dots = document.querySelectorAll('.dot');
             
-            if (slides.length === 0) return;
+            if (slides.length === 0 || dots.length === 0) return;
             
             // Remover classe active do slide atual
-            slides[currentSlide].classList.remove('active');
-            dots[currentSlide].classList.remove('active');
+            if (slides[currentSlide]) {
+                slides[currentSlide].classList.remove('active');
+            }
+            if (dots[currentSlide]) {
+                dots[currentSlide].classList.remove('active');
+            }
             
             // Definir novo slide
             currentSlide = slideIndex;
             
             // Adicionar classe active ao novo slide
-            slides[currentSlide].classList.add('active');
-            dots[currentSlide].classList.add('active');
+            if (slides[currentSlide]) {
+                slides[currentSlide].classList.add('active');
+            }
+            if (dots[currentSlide]) {
+                dots[currentSlide].classList.add('active');
+            }
         }
 
         function startCarousel() {
