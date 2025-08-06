@@ -50,6 +50,20 @@ def seller_register():
         return AuthController.register()
     return render_template('seller_register.html')
 
+
+@app.route('/client_login', methods=['GET', 'POST'])
+def client_login():
+    if request.method == 'POST':
+        return AuthController.client_login()
+    return render_template('client_login.html')
+
+
+@app.route('/client_register', methods=['GET', 'POST'])
+def client_register():
+    if request.method == 'POST':
+        return AuthController.client_register()
+    return render_template('client_register.html')
+
 # Rotas do Dashboard
 
 
@@ -113,6 +127,16 @@ def logout():
 @app.route('/api/validate_user', methods=['POST'])
 def validate_user():
     return AuthController.login()
+
+
+@app.route('/api/client_login', methods=['POST'])
+def api_client_login():
+    return AuthController.client_login()
+
+
+@app.route('/api/client_register', methods=['POST'])
+def api_client_register():
+    return AuthController.client_register()
 
 
 @app.route('/api/dashboard_stats')

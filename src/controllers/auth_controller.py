@@ -127,3 +127,106 @@ class AuthController:
             'success': True,
             'message': 'Logout realizado com sucesso!'
         })
+
+    @staticmethod
+    def client_login():
+        """Controlador para login de clientes"""
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'message': 'Dados inválidos!'
+                }), 400
+
+            email = data.get('email', '').strip().lower()
+            password = data.get('password', '').strip()
+
+            if not email or not password:
+                return jsonify({
+                    'success': False,
+                    'message': 'Email e senha são obrigatórios!'
+                }), 400
+
+            # Verificar se é um cliente (usuário não-admin)
+            user = User.authenticate(email, password)
+            if user and not user.is_admin:
+                # Criar sessão do cliente
+                session['client_id'] = user.id
+                session['client_name'] = user.name
+                session['client_email'] = user.email
+
+                return jsonify({
+                    'success': True,
+                    'message': 'Login realizado com sucesso!',
+                    'client': {
+                        'id': user.id,
+                        'name': user.name,
+                        'email': user.email
+                    }
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'message': 'Email ou senha incorretos!'
+                }), 401
+
+        except Exception as e:
+            print(f"Erro no login do cliente: {e}")
+            return jsonify({
+                'success': False,
+                'message': 'Erro interno do servidor!'
+            }), 500
+
+    @staticmethod
+    def client_register():
+        """Controlador para registro de clientes"""
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'message': 'Dados inválidos!'
+                }), 400
+
+            name = data.get('name', '').strip()
+            email = data.get('email', '').strip().lower()
+            password = data.get('password', '').strip()
+
+            if not name or not email or not password:
+                return jsonify({
+                    'success': False,
+                    'message': 'Todos os campos são obrigatórios!'
+                }), 400
+
+            if len(password) < 6:
+                return jsonify({
+                    'success': False,
+                    'message': 'A senha deve ter pelo menos 6 caracteres!'
+                }), 400
+
+            if User.email_exists(email):
+                return jsonify({
+                    'success': False,
+                    'message': 'Email já cadastrado!'
+                }), 400
+
+            # Criar cliente (usuário não-admin)
+            user_id = User.create(name, email, password, is_admin=False)
+            if user_id:
+                return jsonify({
+                    'success': True,
+                    'message': 'Conta criada com sucesso!'
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'message': 'Erro ao criar conta!'
+                }), 500
+
+        except Exception as e:
+            print(f"Erro no registro do cliente: {e}")
+            return jsonify({
+                'success': False,
+                'message': 'Erro interno do servidor!'
+            }), 500

@@ -11,7 +11,7 @@ class User:
         self.is_admin = is_admin
 
     @staticmethod
-    def create(name, email, password):
+    def create(name, email, password, is_admin=False):
         """Cria um novo usuário"""
         conn = get_db_connection()
         if not conn:
@@ -20,9 +20,9 @@ class User:
         try:
             hashed_password = hashlib.sha256(password.encode()).hexdigest()
             cursor = conn.execute('''
-                INSERT INTO users (name, email, password)
-                VALUES (?, ?, ?)
-            ''', (name, email, hashed_password))
+                INSERT INTO users (name, email, password, is_admin)
+                VALUES (?, ?, ?, ?)
+            ''', (name, email, hashed_password, is_admin))
             conn.commit()
             return cursor.lastrowid
         except Exception as e:

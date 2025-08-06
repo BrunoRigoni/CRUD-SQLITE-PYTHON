@@ -6,6 +6,58 @@
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <title>Home - Bruno's Store</title>
+    <style>
+        /* Estilos para o dropdown de login */
+        .dropdown {
+            position: relative;
+        }
+        
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+        
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 200px;
+            z-index: 1000;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .dropdown-menu.show {
+            display: block;
+        }
+        
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: #333;
+            transition: background-color 0.2s;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f5f5f5;
+            color: #007bff;
+        }
+        
+        .dropdown-item i {
+            width: 16px;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -19,7 +71,19 @@
                     <li><a href="/products">Products</a></li>
                     <li><a href="/sales">Sales</a></li>
                     <li><a href="/cart">Cart</a></li>
-                    <li><a href="/seller_login">Login</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" onclick="toggleLoginDropdown(event)">
+                            Login <i class="fas fa-chevron-down"></i>
+                        </a>
+                        <ul class="dropdown-menu" id="login-dropdown">
+                            <li><a href="/seller_login" class="dropdown-item">
+                                <i class="fas fa-store"></i> Seller Login
+                            </a></li>
+                            <li><a href="/client_login" class="dropdown-item">
+                                <i class="fas fa-user"></i> Client Login
+                            </a></li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </nav>
@@ -65,6 +129,23 @@
         let currentCategory = '';
         let currentSlide = 0;
         let carouselInterval;
+
+        // Função para controlar o dropdown de login
+        function toggleLoginDropdown(event) {
+            event.preventDefault();
+            const dropdown = document.getElementById('login-dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Fechar dropdown quando clicar fora dele
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('login-dropdown');
+            const dropdownToggle = document.querySelector('.dropdown-toggle');
+            
+            if (!dropdownToggle.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
 
         // Carregar produtos e categorias quando a página carregar
         document.addEventListener('DOMContentLoaded', function() {
@@ -158,6 +239,8 @@
 
         function performSearch() {
             const searchInput = document.getElementById('search');
+            if (!searchInput) return; // Verificar se o elemento existe
+            
             const searchTerm = searchInput.value.trim().toLowerCase();
             
             if (searchTerm) {
@@ -173,10 +256,15 @@
             }
         }
 
-        // Permitir pesquisa com Enter
-        document.getElementById('search').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                performSearch();
+        // Permitir pesquisa com Enter (apenas se o elemento search existir)
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('search');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        performSearch();
+                    }
+                });
             }
         });
 
