@@ -18,6 +18,16 @@ app = Flask(__name__)
 app.secret_key = os.environ.get(
     'SECRET_KEY', '33d4a5d98ad218beebc1a5acfd22cccd')
 
+# Configuração da sessão para funcionar no Render
+# Mudando para False para permitir HTTP
+app.config['SESSION_COOKIE_SECURE'] = False
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hora
+# Permitir que funcione em qualquer domínio
+app.config['SESSION_COOKIE_DOMAIN'] = None
+app.config['SESSION_COOKIE_PATH'] = '/'  # Definir path da sessão
+
 # Configuração CORS
 CORS(app, origins=[
     'http://127.0.0.1:5500', 'http://localhost:5500',
@@ -27,7 +37,7 @@ CORS(app, origins=[
     'https://crud-sqlite-python.onrender.com',
     'https://*.onrender.com',
     'https://*.render.com'
-], supports_credentials=True, allow_headers=['Content-Type'], methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
+], supports_credentials=True)
 
 # Rotas principais
 

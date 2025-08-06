@@ -219,8 +219,11 @@ class SellerLogin {
         }
         
         // Desabilitar botão durante a requisição
-        this.submitButton.disabled = true;
-        this.submitButton.textContent = 'Entrando...';
+        const submitButton = this.form.querySelector('button[type="submit"]');
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Entrando...';
+        }
         
         try {
             // Preparar dados
@@ -229,8 +232,12 @@ class SellerLogin {
                 password: this.passwordInput.value
             };
             
+            console.log('Tentando fazer login com:', formData);
+            
             // Fazer requisição para validação
             const response = await this.validateWithServer(formData);
+            
+            console.log('Resposta do servidor:', response);
             
             if (response.valid) {
                 // Login bem-sucedido
@@ -255,17 +262,21 @@ class SellerLogin {
             this.showError('Erro de conexão. Verifique se o servidor Flask está rodando (python app.py)');
         } finally {
             // Reabilitar botão
-            this.submitButton.disabled = false;
-            this.submitButton.textContent = 'Login';
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Login';
+            }
         }
     }
 
     async validateWithServer(formData) {
         try {
-            console.log('Enviando requisição para:', `${this.apiBaseUrl}/api/validate_user`);
+            const url = `${this.apiBaseUrl}/api/validate_user`;
+            console.log('Enviando requisição para:', url);
             console.log('Dados enviados:', formData);
+            console.log('apiBaseUrl:', this.apiBaseUrl);
             
-            const response = await fetch(`${this.apiBaseUrl}/api/validate_user`, {
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -275,6 +286,9 @@ class SellerLogin {
             });
             
             console.log('Resposta recebida:', response);
+            console.log('Status da resposta:', response.status);
+            console.log('Headers da resposta:', response.headers);
+            
             const data = await response.json();
             console.log('Dados da resposta:', data);
             
